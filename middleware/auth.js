@@ -29,30 +29,30 @@ const auth = (req, res, next) => {
         next();
     }
 }
-const checkCourseId = async (req, res, next) => {
-    const teacherId = res.locals.teacherId;
-    const { courseId } = req.params;
-
-    if (courseId === undefined) {
-        throw new Error('MissingParameters');
-    }
-
-    if (isNaN(courseId) || x === 0) {
-        throw new Error('InvalidParameters');
-    }
-
-    const [courseMatch] = await req.db.execute(`
-    SELECT id
-    FROM course
-    WHERE id = ? AND teacher_id = ? AND is_deleted = 0
-    `, [courseId, teacherId]
-    );
-    if (courseMatch.length === 0) {
-        throw new Error('PermissionDenied');
-    }
-
-    next();
-}
+// const checkCourseId = async (req, res, next) => {
+//     const teacherId = res.locals.teacherId;
+//     const { courseId } = req.params;
+//
+//     if (courseId === undefined) {
+//         throw new Error('MissingParameters');
+//     }
+//
+//     if (isNaN(courseId) || x === 0) {
+//         throw new Error('InvalidParameters');
+//     }
+//
+//     const [courseMatch] = await req.db.execute(`
+//     SELECT id
+//     FROM course
+//     WHERE id = ? AND teacher_id = ? AND is_deleted = 0
+//     `, [courseId, teacherId]
+//     );
+//     if (courseMatch.length === 0) {
+//         throw new Error('PermissionDenied');
+//     }
+//
+//     next();
+// }
 module.exports = {
     setToken,
     auth

@@ -8,10 +8,16 @@ const db = require('../db/index');
 const { setToken } = require('../middleware/auth');
 
 router.post('/register', async (req, res) => {
-    const { username, password } = req.body;
+    const {username, password} = req.body;
+
+    try {
+
     await db.execute(`
     insert into teacher(username, password)
     values(?, ?)`, [username, password])
+} catch (error) {
+        console.log(error)
+    }
     res.json({ code: 0 })
 })
 router.post ('/login',async (req, res) => {

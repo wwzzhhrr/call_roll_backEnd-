@@ -26,12 +26,41 @@ router.get('/courses/:course_id/classes/:class_id', auth, async (req, res) => {
 })
 
 router.post('/courses/:course_id/classes/:class_id/students/:student_id', auth, async (req, res) => {
-    const { score } = req.body
+    const { score } = req.body;
     const { course_id, class_id, student_id } = req.params;
-    await db.execute(`
-    insert into score(course_id, class_id, student_id, score)
-    values(? , ?, ?, ?)`, [course_id, class_id, student_id, score])
-    res.send({code: 0});
+    if (typeof score !== 'number') {
+        return res.status(400).send({ code: 1, message: 'Score must be a number.' });
+    }
+    try {
+        // 检查是否已有分数记录
+        const [existingScores] = await db.query(`
+            SELECT score
+            FROM score
+            WHERE course_id = ? AND class_id = ? AND student_id = ?
+        `, [course_id, class_id, student_id]);
+
+        if (existingScores.length > 0) {
+            // 如果已有记录，更新分数
+            const newScore = existingScores[0].score + score;
+            await db.execute(`
+                UPDATE score
+                SET score = ?
+                WHERE course_id = ? AND class_id = ? AND student_id = ?
+            `, [newScore, course_id, class_id, student_id]);
+            res.send({ code: 0, message: 'Score updated successfully.' });
+        } else {
+            // 如果没有记录，插入新的分数
+            await db.execute(`
+                INSERT INTO score (course_id, class_id, student_id, score)
+                VALUES (?, ?, ?, ?)`,
+                [course_id, class_id, student_id, score]
+            );
+            res.send({ code: 0, message: 'Score inserted successfully.' });
+        }
+    } catch (error) {
+        console.error('Error inserting or updating score:', error);
+        res.status(500).send({ code: -1, message: 'Failed to insert or update score.' });
+    }
 })
 
 router.patch('/change/courses/:course_id/classes/:class_id/students/:student_id', auth, async (req, res) => {

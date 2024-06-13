@@ -14,6 +14,16 @@ router.get(`/`, auth,async (req, res) => {
             res.status(500).send('Internal Server Error');
     }
 });
+router.get(`/:course_id`, auth,async (req, res) => {
+    try {
+        const teacher_id = res.locals.token;
+        const { course_id } = req.params
+        const result = await db.query('SELECT * FROM course WHERE teacher_id=? and is_deleted = 0 and id = ?', [teacher_id, course_id]);
+        res.send(result[0]);
+    } catch (err) {
+        res.status(500).send('Internal Server Error');
+    }
+});
 router.post('/addCourse', auth, async (req, res) => {
     const teacher_id = res.locals.token;
     const { name: courseName } = req.body;
@@ -26,14 +36,14 @@ router.post('/addCourse', auth, async (req, res) => {
     }
 })
 router.delete('/:courseId', auth, async (req, res)=>{
-    const courseId = req.params.token;
+    const { courseId } = req.params
     try {
-        await db.execute(`UPDATE course SET is_deleted = 1 WHERE id = ?`, [courseId]);
+        await db.execute(`UPDATE course SET is_deleted = 1 WHERE id = ? and is_deleted = 0`, [courseId]);
         res.json({code: 0});
     }
     catch (error) {
         console.error('Error occurred while adding course:', error);
-        res.status(500).json({ error: 'An error occurred while adding the course.' });
+        res.status(500).json({ error: '500' });
     }
 });
 
